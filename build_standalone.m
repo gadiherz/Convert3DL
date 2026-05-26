@@ -21,7 +21,12 @@ addpath(thisDir);
 
 assetsDir    = fullfile(thisDir, "assets");
 buildDir     = fullfile(thisDir, "build_Convert3DL");
-installerDir = fullfile(thisDir, "installer_Convert3DL");
+
+% Package the installer in a SHORT local temp path, not under OneDrive.
+% OneDrive can lock/cloud-only the output and the long path overflows the
+% Windows 260-char limit during packaging. We copy the result back afterwards.
+installerDir = fullfile(tempdir, "Convert3DL_installer");
+distDir      = fullfile(thisDir, "installer");   % committed, repo-tracked copy
 
 logoPath = fullfile(assetsDir, "ArCH3D_logo.png");
 
@@ -59,6 +64,10 @@ disp("Build complete. Executable in:");
 disp(buildDir);
 
 % --- 2. Package a branded WEB installer (auto-downloads the MATLAB Runtime) ---
+if isfolder(installerDir)
+    rmdir(installerDir, "s");   % clear any stale/locked previous output
+end
+mkdir(installerDir);
 compiler.package.installer(results, ...
     "ApplicationName", "Convert3DL", ...
     "AuthorName",      "Gadi Herzlinger", ...
@@ -74,6 +83,20 @@ compiler.package.installer(results, ...
 
 disp("Installer complete. Web installer in:");
 disp(installerDir);
+
+% --- 3. Copy the built installer into the repo-tracked installer\ folder ---
+built = dir(fullfile(installerDir, "*.exe"));
+if isempty(built)
+    warning("build_standalone:noInstallerExe", ...
+        "No installer .exe found in '%s'.", installerDir);
+else
+    if ~isfolder(distDir); mkdir(distDir); end
+    src = fullfile(built(1).folder, built(1).name);
+    dst = fullfile(distDir, "Convert3DL_WebInstaller.exe");
+    copyfile(src, dst, "f");
+    disp("Distributable installer copied to:");
+    disp(dst);
+end
 
 % --- Alternative: OFFLINE installer that bundles the full Runtime (~GBs) ---
 % compiler.package.installer(results, ...
