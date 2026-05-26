@@ -1,0 +1,22 @@
+# MATLAB Compiler build artifacts -- keep the repo source-only.
+build_Convert3DL/
+installer_Convert3DL/
+installer_Convert3DL_offline/
+
+# Compiled output and scratch files
+*.exe
+*.zip
+*.log
+requiredMCRProducts.txt
+mccExcludedFiles.log
+readme.txt
+unresolvedSymbols.txt
+
+# ...but DO ship the distributable web installer.
+!installer/
+!installer/*.exe
+
+# MATLAB editor / cache
+*.asv
+*.m~
+slprj/
