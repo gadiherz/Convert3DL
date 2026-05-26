@@ -16,6 +16,10 @@ unresolvedSymbols.txt
 !installer/
 !installer/*.exe
 
+# Build-generated branding images (regenerated from assets/ArCH3D_logo.png).
+assets/ArCH3D_icon.png
+assets/ArCH3D_splash.png
+
 # MATLAB editor / cache
 *.asv
 *.m~

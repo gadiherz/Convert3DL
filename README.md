@@ -2,6 +2,10 @@
 
 Convert AGMT3-D `.3dl` files to **PLY**, from a MATLAB script or a standalone app.
 
+*An **ArCH3D** tool — School of Archaeology and Maritime Cultures, University of Haifa.*
+The app window and the installer are branded with the ArCH3D logo
+(`assets/ArCH3D_logo.png`); `build_standalone.m` derives the icon and splash from it.
+
 A `.3dl` file is a MAT file (loaded with `-mat`) holding:
 
 | variable    | size  | meaning |

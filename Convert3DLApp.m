@@ -13,53 +13,78 @@ function Convert3DLApp()
     state.inputPath = "";   % selected file or folder
     state.isFolder  = false;
 
-    fig = uifigure("Name", "Convert .3dl to PLY", ...
-        "Position", [100 100 640 460]);
+    darkBG = [0.12 0.16 0.20];   % dark slate so the white "ArCH" logo text reads
+
+    fig = uifigure("Name", "Convert .3dl to PLY  —  ArCH3D", ...
+        "Position", [100 100 660 560]);
     fig.UserData = state;
 
-    gl = uigridlayout(fig, [6 3]);
-    gl.RowHeight   = {30, 30, 30, 30, '1x', 25};
+    gl = uigridlayout(fig, [7 3]);
+    gl.RowHeight   = {110, 30, 30, 30, 30, '1x', 25};
     gl.ColumnWidth = {130, '1x', 130};
 
-    % Row 1: pick a single file
+    % Row 1: ArCH3D branding banner (logo + lab designation) on a dark panel
+    banner = uipanel(gl, "BackgroundColor", darkBG, "BorderType", "none");
+    banner.Layout.Row = 1; banner.Layout.Column = [1 3];
+    bg = uigridlayout(banner, [1 2], "BackgroundColor", darkBG, ...
+        "ColumnWidth", {230, '1x'}, "Padding", [8 6 8 6], "ColumnSpacing", 12);
+
+    logoPath = localAsset("ArCH3D_logo.png");
+    if isfile(logoPath)
+        logoImg = uiimage(bg, "ImageSource", logoPath, "ScaleMethod", "fit");
+        logoImg.Layout.Row = 1; logoImg.Layout.Column = 1;
+    else
+        logoImg = uilabel(bg, "Text", "ArCH3D", "FontColor", [1 1 1], ...
+            "FontSize", 30, "FontWeight", "bold");
+        logoImg.Layout.Row = 1; logoImg.Layout.Column = 1;
+    end
+
+    designation = uilabel(bg, ...
+        "Text", {'School of Archaeology and'; ...
+                 'Maritime Cultures'; 'University of Haifa'}, ...
+        "FontColor", [0.92 0.94 0.96], "FontSize", 13, ...
+        "HorizontalAlignment", "right", "VerticalAlignment", "center");
+    designation.Layout.Row = 1; designation.Layout.Column = 2;
+
+    % Row 2: pick a single file
     btnFile = uibutton(gl, "Text", "Select File…", ...
         "ButtonPushedFcn", @(~,~) onSelectFile());
-    btnFile.Layout.Row = 1; btnFile.Layout.Column = 1;
+    btnFile.Layout.Row = 2; btnFile.Layout.Column = 1;
 
     inField = uieditfield(gl, "text", "Editable", "off", ...
         "Placeholder", "No input selected");
-    inField.Layout.Row = 1; inField.Layout.Column = [2 3];
+    inField.Layout.Row = 2; inField.Layout.Column = [2 3];
 
-    % Row 2: pick a folder (batch)
+    % Row 3: pick a folder (batch)
     btnFolder = uibutton(gl, "Text", "Select Folder…", ...
         "ButtonPushedFcn", @(~,~) onSelectFolder());
-    btnFolder.Layout.Row = 2; btnFolder.Layout.Column = 1;
+    btnFolder.Layout.Row = 3; btnFolder.Layout.Column = 1;
 
     modeLabel = uilabel(gl, "Text", "(choose a file OR a folder)");
-    modeLabel.Layout.Row = 2; modeLabel.Layout.Column = [2 3];
+    modeLabel.Layout.Row = 3; modeLabel.Layout.Column = [2 3];
 
-    % Row 3: output folder
+    % Row 4: output folder
     btnOut = uibutton(gl, "Text", "Output Folder…", ...
         "ButtonPushedFcn", @(~,~) onSelectOut());
-    btnOut.Layout.Row = 3; btnOut.Layout.Column = 1;
+    btnOut.Layout.Row = 4; btnOut.Layout.Column = 1;
 
     outField = uieditfield(gl, "text", ...
         "Placeholder", "Defaults to source folder");
-    outField.Layout.Row = 3; outField.Layout.Column = [2 3];
+    outField.Layout.Row = 4; outField.Layout.Column = [2 3];
 
-    % Row 4: convert
+    % Row 5: convert
     btnConvert = uibutton(gl, "Text", "Convert", ...
         "FontWeight", "bold", ...
         "ButtonPushedFcn", @(~,~) onConvert());
-    btnConvert.Layout.Row = 4; btnConvert.Layout.Column = [1 3];
+    btnConvert.Layout.Row = 5; btnConvert.Layout.Column = [1 3];
 
-    % Row 5: log
+    % Row 6: log
     logArea = uitextarea(gl, "Editable", "off", "Value", {'Ready.'});
-    logArea.Layout.Row = 5; logArea.Layout.Column = [1 3];
+    logArea.Layout.Row = 6; logArea.Layout.Column = [1 3];
 
-    % Row 6: status line
+    % Row 7: status line
     statusLabel = uilabel(gl, "Text", "");
-    statusLabel.Layout.Row = 6; statusLabel.Layout.Column = [1 3];
+    statusLabel.Layout.Row = 7; statusLabel.Layout.Column = [1 3];
 
     % ----------------- callbacks -----------------
     function onSelectFile()
@@ -133,5 +158,24 @@ function Convert3DLApp()
         lines = cellstr(string(msg));
         logArea.Value = [v(:); lines(:)];
         drawnow;
+    end
+end
+
+function p = localAsset(name)
+%LOCALASSET  Resolve a bundled asset path in both MATLAB and deployed runs.
+%   In MATLAB the asset lives in .\assets\. In a compiled standalone the
+%   file (added via AdditionalFiles) is extracted under ctfroot, so we
+%   search there. Returns "" if not found, letting callers fall back.
+    if isdeployed
+        cand = fullfile(ctfroot, name);
+        if isfile(cand); p = cand; return; end
+        found = dir(fullfile(ctfroot, "**", name));
+        if ~isempty(found)
+            p = fullfile(found(1).folder, found(1).name);
+        else
+            p = "";
+        end
+    else
+        p = fullfile(fileparts(mfilename("fullpath")), "assets", name);
     end
 end
